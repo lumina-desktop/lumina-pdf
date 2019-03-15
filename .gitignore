@@ -6,6 +6,8 @@
 *.lo
 *.o
 *.obj
+ui_*.h
+*.qm
 
 # Precompiled Headers
 *.gch
@@ -30,3 +32,4 @@
 *.exe
 *.out
 *.app
+src-qt5/lumina-pdf

@@ -92,13 +92,11 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 
-# Remove the pkg-plist file (auto-generated at build time now)
-if [ -e "pkg-plist" ] ; then
-  rm "pkg-plist"
+if [ ! -e "pkg-plist" ] ; then
+  make stage
+  make makeplist | grep -v "check/what/makeplist/gives/you" > pkg-plist
+  make clean
 fi
-#make stage
-#make makeplist | grep -v "check/what/makeplist/gives/you" > pkg-plist
-#make clean
 
 # Update port cat Makefile
 tcat=$(echo $port | cut -d '/' -f 1)

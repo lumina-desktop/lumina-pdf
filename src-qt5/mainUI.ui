@@ -208,6 +208,8 @@
    <addaction name="separator"/>
    <addaction name="actionZoom_In_2"/>
    <addaction name="actionZoom_Out_2"/>
+   <addaction name="actionPrevious_Page"/>
+   <addaction name="actionNext_Page"/>
   </widget>
   <action name="actionOpen_PDF">
    <property name="text">

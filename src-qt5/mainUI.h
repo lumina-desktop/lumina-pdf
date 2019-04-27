@@ -71,6 +71,7 @@ private:
   void startPresentation(bool atStart);
   void ShowPage(int page);
   void endPresentation();
+  bool presentationActive();
 
 private slots:
   void startLoadingPages(int degrees = 0);
@@ -78,12 +79,8 @@ private slots:
   void slotSetProgress(int);
 
   // Simplification routines
-  void nextPage() {
-    ShowPage(WIDGET->currentPage() + 1);
-  } // currentPage() starts at 1 rather than 0
-  void prevPage() {
-    ShowPage(WIDGET->currentPage() - 1);
-  } // currentPage() starts at 1 rather than 0
+  void nextPage();
+  void prevPage();
   void firstPage() { ShowPage(1); }
   void lastPage() { ShowPage(BACKEND->numPages()); }
   void startPresentationHere() { startPresentation(false); }

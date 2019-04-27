@@ -50,8 +50,7 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
       "palette(highlight); border-radius: 5px; }");
   label_page = new QLabel(this);
   label_page->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  label_page->setSizePolicy(QSizePolicy::MinimumExpanding,
-                            QSizePolicy::Preferred);
+  label_page->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
 
   contextMenu = new QMenu(this);
   QObject::connect(contextMenu, SIGNAL(aboutToShow()), this,
@@ -84,14 +83,17 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   // SLOT(slotStartPresentation(QAction*)) );
 
   // Create the other interface widgets
+  QWidget *spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    ui->toolBar->insertWidget(ui->actionPrevious_Page, spacer);
   progress = new QProgressBar(this);
   progress->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
   progress->setFormat("%v/%m (%p%)"); // [current]/[total]
-  progAct = ui->toolBar->addWidget(progress);
+  progAct = ui->toolBar->addWidget( progress);
   progAct->setVisible(false);
   clockAct = ui->toolBar->addWidget(label_clock);
   clockAct->setVisible(false);
-  pageAct = ui->toolBar->addWidget(label_page);
+  pageAct = ui->toolBar->insertWidget(ui->actionNext_Page,label_page);
   pageAct->setVisible(false);
 
   // Put the various actions into logical groups
@@ -361,6 +363,7 @@ QScreen *MainUI::getScreen(bool current, bool &cancelled) {
 }
 
 void MainUI::startPresentation(bool atStart) {
+  if(presentationActive()){ return; } //already running
   if (BACKEND->hashSize() == 0) {
     qDebug() << "MainUI::startPresentation() called while backend is empty!\n";
     return;
@@ -419,7 +422,7 @@ void MainUI::ShowPage(int page) {
   WIDGET->setCurrentPage(page); // page numbers start at 1 for this widget
   // Stop here if no presentation currently running
 
-  if (presentationLabel == 0 || !presentationLabel->isVisible()) {
+  if (!presentationActive()) {
     WIDGET->updatePreview();
     return;
   }
@@ -452,11 +455,8 @@ void MainUI::ShowPage(int page) {
 }
 
 void MainUI::endPresentation() {
-  if (presentationLabel == 0 || !presentationLabel->isVisible()) {
-    return;
-  }                          // not in presentation mode
-  presentationLabel->hide(); // just hide this (no need to re-create the label
-                             // for future presentations)
+  if (!presentationActive()) { return; } // not in presentation mode
+  presentationLabel->hide(); // just hide this (no need to re-create the label for future presentations)
   ui->actionStop_Presentation->setEnabled(false);
   ui->actionStart_Here->setEnabled(true);
   ui->actionStart_Begin->setEnabled(true);
@@ -467,6 +467,11 @@ void MainUI::endPresentation() {
     lastPage();
   }
   updatePageNumber();
+}
+
+bool MainUI::presentationActive(){
+  if(presentationLabel == 0 ) { return false; }
+  else { return presentationLabel->isVisible(); }
 }
 
 void MainUI::startLoadingPages(int degrees) {
@@ -766,6 +771,21 @@ void MainUI::wheelEvent(QWheelEvent *event) {
   // Scroll the window according to the mouse wheel
   //qDebug() << "Got Wheel Event!";
   QMainWindow::wheelEvent(event);
+}
+
+// Simplification routines
+void MainUI::nextPage() {
+  int next = WIDGET->currentPage() + 1;
+  if(presentationActive() || next <= BACKEND->numPages()){
+    ShowPage(next);
+  }
+} // currentPage() starts at 1 rather than 0
+
+void MainUI::prevPage() {
+  int next = WIDGET->currentPage() - 1;
+  if(presentationActive() || next >= 1){
+    ShowPage(next);
+  }
 }
 
 void MainUI::find(QString text, bool forward) {

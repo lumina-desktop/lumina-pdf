@@ -4,6 +4,7 @@
 #include <QImage>
 #include <QSize>
 #include <poppler/qt5/poppler-qt5.h>
+#include <memory>
 
 namespace LuminaPDF {
 

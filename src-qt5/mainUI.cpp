@@ -555,9 +555,10 @@ void MainUI::slotPageLoaded(int page) {
 
 void MainUI::paintToPrinter(QPrinter *PRINTER) {
   //qDebug() << "paintToPrinter()";
-  if (BACKEND->hashSize() != BACKEND->numPages()) {
+  /*if (BACKEND->hashSize() != BACKEND->numPages()) {
+    //qDebug() << " - Page size mismatch";
     return;
-  }
+  }*/
   // qDebug() << "paintToPrinter";
   int pages = BACKEND->numPages();
   int firstpage = 0;
@@ -573,6 +574,8 @@ void MainUI::paintToPrinter(QPrinter *PRINTER) {
     qDebug() << "  -- Resolutions listed as supported:"
              << PRINTER->supportedResolutions();
   }
+  QSize PDPI(PRINTER->resolution(), PRINTER->resolution());
+
   // bool duplex = (PRINTER->duplex()!=QPrinter::DuplexNone);
   // Determine the first page that needs to be printed, and the range
   if ((PRINTER->fromPage() != PRINTER->toPage() || PRINTER->fromPage() != 0) &&
@@ -639,7 +642,8 @@ void MainUI::paintToPrinter(QPrinter *PRINTER) {
     // qDebug() << "Printing Page:" << pageCount[i];
     progress->setValue(i);
     QApplication::processEvents();
-    QImage img = BACKEND->imageHash(pageCount[i])
+    BACKEND->renderPage(pageCount[i]+1, PDPI); //backend starts with page 1, not zero
+    QImage img = BACKEND->imageHash(pageCount[i]+1)
                      .scaled(sz, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     // Now draw the image
     painter.drawImage(0, 0, img);

@@ -162,6 +162,8 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
                    SLOT(nextPage()));
   QObject::connect(ui->actionLast_Page, SIGNAL(triggered()), this,
                    SLOT(lastPage()));
+  QObject::connect(ui->actionGoTo_Page, SIGNAL(triggered()), this,
+                   SLOT(gotoPage()));
   QObject::connect(ui->actionProperties, &QAction::triggered, WIDGET,
                    [&] { PROPDIALOG->show(); });
   QObject::connect(BACKEND, &Renderer::OrigSize, this,
@@ -792,6 +794,13 @@ void MainUI::prevPage() {
   }
 }
 
+void MainUI::gotoPage() {
+  bool ok;
+  int page = QInputDialog::getInt(this, tr("Go to page"),
+                                         tr("Page number:"), 1, 1, BACKEND->numPages(), 1, &ok);
+    if (ok)
+        ShowPage(page);
+}
 void MainUI::find(QString text, bool forward) {
   if (!text.isEmpty()) {
     static bool previousMatchCase = matchCase;

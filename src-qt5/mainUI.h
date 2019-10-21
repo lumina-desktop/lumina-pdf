@@ -81,6 +81,7 @@ private slots:
   // Simplification routines
   void nextPage();
   void prevPage();
+  void gotoPage();
   void firstPage() { ShowPage(1); }
   void lastPage() { ShowPage(BACKEND->numPages()); }
   void startPresentationHere() { startPresentation(false); }

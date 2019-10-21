@@ -116,7 +116,7 @@
      <x>0</x>
      <y>0</y>
      <width>697</width>
-     <height>24</height>
+     <height>26</height>
     </rect>
    </property>
    <property name="contextMenuPolicy">
@@ -168,6 +168,7 @@
     <addaction name="actionPrevious_Page"/>
     <addaction name="actionNext_Page"/>
     <addaction name="actionLast_Page"/>
+    <addaction name="actionGoTo_Page"/>
     <addaction name="separator"/>
     <addaction name="actionBookmarks"/>
     <addaction name="separator"/>
@@ -407,6 +408,17 @@
   <action name="actionClearHighlights">
    <property name="text">
     <string>Clear Highlights</string>
+   </property>
+  </action>
+  <action name="actionGoTo_Page">
+   <property name="text">
+    <string>Go to Page...</string>
+   </property>
+   <property name="toolTip">
+    <string>Go To Page</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>

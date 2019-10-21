@@ -69,6 +69,8 @@ bool Renderer::loadDocument(QString path, QString password) {
       return false;
     } // invalid password
   }
+  DOC->setRenderHint(Poppler::Document::Antialiasing);
+  DOC->setRenderHint(Poppler::Document::TextAntialiasing);
   // qDebug() << "Opening File:" << path;
   doctitle = DOC->title();
   if (doctitle.isEmpty()) {

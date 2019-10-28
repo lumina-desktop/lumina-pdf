@@ -96,6 +96,21 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   pageAct = ui->toolBar->insertWidget(ui->actionNext_Page,label_page);
   pageAct->setVisible(false);
 
+  QComboBox *zoomPercent = new QComboBox(this);
+  zoomPercent->setEditable(true);
+  zoomPercent->addItem(tr("Fit width"), 0);
+  zoomPercent->addItem(tr("Fit page"), 1);
+  zoomPercent->addItem(tr("25 %"), 25);
+  zoomPercent->addItem(tr("50 %"), 50);
+  zoomPercent->addItem(tr("75 %"), 75);
+  zoomPercent->addItem(tr("100 %"), 100);
+  zoomPercent->addItem(tr("150 %"), 150);
+  zoomPercent->addItem(tr("200 %"), 200);
+  zoomPercent->addItem(tr("300 %"), 300);
+  zoomPercent->addItem(tr("400 %"), 400);
+  zoomPercent->addItem(tr("500 %"), 500);
+  ui->toolBar->addWidget(zoomPercent);
+
   // Put the various actions into logical groups
   QActionGroup *tmp = new QActionGroup(this);
   tmp->setExclusive(true);
@@ -164,6 +179,8 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
                    SLOT(lastPage()));
   QObject::connect(ui->actionGoTo_Page, SIGNAL(triggered()), this,
                    SLOT(gotoPage()));
+  QObject::connect(zoomPercent, qOverload<int>(&QComboBox::currentIndexChanged),
+                   [=](int index) { onZoomPageIndexChanged(zoomPercent->currentData().toInt()); });
   QObject::connect(ui->actionProperties, &QAction::triggered, WIDGET,
                    [&] { PROPDIALOG->show(); });
   QObject::connect(BACKEND, &Renderer::OrigSize, this,
@@ -801,6 +818,21 @@ void MainUI::gotoPage() {
     if (ok)
         ShowPage(page);
 }
+
+void MainUI::onZoomPageIndexChanged(int index) {
+
+  if ( index == -1 ) {
+    return;
+  } else if ( index == 0 ) { // fit width
+    WIDGET->fitToWidth();
+  } else if ( index == 1 ) { // fit page
+    WIDGET->fitView();
+  } else {
+    WIDGET->fitView();
+    WIDGET->zoomIn(index / 100.0);
+  }
+}
+
 void MainUI::find(QString text, bool forward) {
   if (!text.isEmpty()) {
     static bool previousMatchCase = matchCase;

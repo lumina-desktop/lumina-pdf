@@ -111,6 +111,7 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   zoomPercent->addItem(tr("500 %"), 500);
   zoomPercent->setInsertPolicy(QComboBox::NoInsert);
   zoomPercent->setInputMethodHints(Qt::ImhDigitsOnly);
+  zoomPercent->setCurrentIndex(1);
   ui->toolBar->insertWidget(ui->actionZoom_In_2, zoomPercent);
 
   // Put the various actions into logical groups

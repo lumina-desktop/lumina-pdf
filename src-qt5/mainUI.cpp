@@ -111,16 +111,10 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   zoomPercent->addItem(tr("500 %"), 500);
   zoomPercent->setInsertPolicy(QComboBox::NoInsert);
   zoomPercent->setInputMethodHints(Qt::ImhDigitsOnly);
-  ui->toolBar->addWidget(zoomPercent);
+  ui->toolBar->insertWidget(ui->actionZoom_In_2, zoomPercent);
 
   // Put the various actions into logical groups
   QActionGroup *tmp = new QActionGroup(this);
-  tmp->setExclusive(true);
-  tmp->addAction(ui->actionFit_Width);
-  tmp->addAction(ui->actionFit_Page);
-  ui->actionFit_Page->setChecked(true);
-
-  tmp = new QActionGroup(this);
   tmp->setExclusive(true);
   tmp->addAction(ui->actionSingle_Page);
   tmp->addAction(ui->actionDual_Pages);
@@ -135,10 +129,6 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   QObject::connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(close()));
   QObject::connect(ui->actionPrint, SIGNAL(triggered()), PrintDLG,
                    SLOT(open()));
-  QObject::connect(ui->actionFit_Width, SIGNAL(triggered()), WIDGET,
-                   SLOT(fitToWidth()));
-  QObject::connect(ui->actionFit_Page, SIGNAL(triggered()), WIDGET,
-                   SLOT(fitView()));
   QObject::connect(ui->actionOpen_PDF, SIGNAL(triggered()), this,
                    SLOT(OpenNewFile()));
   QObject::connect(ui->actionSingle_Page, SIGNAL(triggered()), WIDGET,
@@ -243,8 +233,6 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   // Setup all the icons
   ui->actionPrint->setIcon(QIcon::fromTheme("document-print"));
   ui->actionClose->setIcon(QIcon::fromTheme("window-close"));
-  ui->actionFit_Width->setIcon(QIcon::fromTheme("transform-scale"));
-  ui->actionFit_Page->setIcon(QIcon::fromTheme("zoom-fit-best"));
   ui->actionOpen_PDF->setIcon(QIcon::fromTheme("document-open"));
   ui->actionSingle_Page->setIcon( QIcon::fromTheme("view-split-top-bottom", QIcon::fromTheme("format-view-agenda") ));
   ui->actionDual_Pages->setIcon( QIcon::fromTheme("view-split-left-right", QIcon::fromTheme("format-view-grid-small") ));

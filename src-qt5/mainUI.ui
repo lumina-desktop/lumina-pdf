@@ -200,8 +200,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionFit_Page"/>
-   <addaction name="actionFit_Width"/>
    <addaction name="separator"/>
    <addaction name="actionSingle_Page"/>
    <addaction name="actionDual_Pages"/>
@@ -226,22 +224,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
-   </property>
-  </action>
-  <action name="actionFit_Page">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Fit Page</string>
-   </property>
-  </action>
-  <action name="actionFit_Width">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Fit Width</string>
    </property>
   </action>
   <action name="actionPrint">
@@ -378,7 +360,7 @@
   </action>
   <action name="actionZoom_Out_2">
    <property name="text">
-    <string/>
+    <string>Zoom Out</string>
    </property>
    <property name="toolTip">
     <string>Zoom Out</string>
@@ -386,7 +368,7 @@
   </action>
   <action name="actionZoom_In_2">
    <property name="text">
-    <string/>
+    <string>Zoom In</string>
    </property>
    <property name="toolTip">
     <string>Zoom In</string>

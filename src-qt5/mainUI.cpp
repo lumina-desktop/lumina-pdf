@@ -157,10 +157,10 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
     }
     BACKEND->setDegrees(90);
   });
-  QObject::connect(ui->actionZoom_In_2, &QAction::triggered, WIDGET,
-                   [&] { WIDGET->zoomIn(1.2); });
-  QObject::connect(ui->actionZoom_Out_2, &QAction::triggered, WIDGET,
-                   [&] { WIDGET->zoomOut(1.2); });
+  QObject::connect(ui->actionZoom_In_2, SIGNAL(triggered()), this,
+                   SLOT(zoomIn()));
+  QObject::connect(ui->actionZoom_Out_2, SIGNAL(triggered()), this,
+                   SLOT(zoomOut()));
   QObject::connect(ui->actionFirst_Page, SIGNAL(triggered()), this,
                    SLOT(firstPage()));
   QObject::connect(ui->actionPrevious_Page, SIGNAL(triggered()), this,
@@ -809,6 +809,54 @@ void MainUI::gotoPage() {
                                          tr("Page number:"), 1, 1, BACKEND->numPages(), 1, &ok);
     if (ok)
         ShowPage(page);
+}
+
+void MainUI::zoomIn() {
+  if (zoomPercent->findText( zoomPercent->currentText() ) == -1 ) {
+      double percentage = zoomPercent->currentText().remove('%').toDouble() * 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+  }
+  else {
+    switch( zoomPercent->currentData().toInt() ) {
+    case -2:
+    case -1:
+      WIDGET->zoomIn( 1.2 );
+      zoomPercent->lineEdit()->setText(QString("120 %"));
+      break;
+    default:
+      double percentage = zoomPercent->currentData().toInt() * 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+      break;
+    }
+  }
+}
+
+void MainUI::zoomOut() {
+  if (zoomPercent->findText( zoomPercent->currentText() ) == -1 ) {
+      double percentage = zoomPercent->currentText().remove('%').toDouble() / 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+  }
+  else {
+    switch( zoomPercent->currentData().toInt() ) {
+    case -2:
+    case -1:
+      WIDGET->zoomIn( 1.2 );
+      zoomPercent->lineEdit()->setText(QString("120 %"));
+      break;
+    default:
+      double percentage = zoomPercent->currentData().toInt() / 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+      break;
+    }
+  }
 }
 
 void MainUI::onZoomPageIndexChanged() {

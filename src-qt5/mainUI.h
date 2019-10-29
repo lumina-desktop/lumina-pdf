@@ -84,6 +84,8 @@ private slots:
   void nextPage();
   void prevPage();
   void gotoPage();
+  void zoomIn();
+  void zoomOut();
   void onZoomPageIndexChanged();
   void onZoomPageTextChanged();
   void firstPage() { ShowPage(1); }

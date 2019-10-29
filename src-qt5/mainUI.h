@@ -84,7 +84,8 @@ private slots:
   void nextPage();
   void prevPage();
   void gotoPage();
-  void onZoomPageIndexChanged(int index );
+  void onZoomPageIndexChanged();
+  void onZoomPageTextChanged();
   void firstPage() { ShowPage(1); }
   void lastPage() { ShowPage(BACKEND->numPages()); }
   void startPresentationHere() { startPresentation(false); }

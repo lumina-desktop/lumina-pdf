@@ -96,10 +96,10 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   pageAct = ui->toolBar->insertWidget(ui->actionNext_Page,label_page);
   pageAct->setVisible(false);
 
-  QComboBox *zoomPercent = new QComboBox(this);
+  zoomPercent = new QComboBox(this);
   zoomPercent->setEditable(true);
-  zoomPercent->addItem(tr("Fit width"), 0);
-  zoomPercent->addItem(tr("Fit page"), 1);
+  zoomPercent->addItem(tr("Fit width"), -2);
+  zoomPercent->addItem(tr("Fit page"), -1);
   zoomPercent->addItem(tr("25 %"), 25);
   zoomPercent->addItem(tr("50 %"), 50);
   zoomPercent->addItem(tr("75 %"), 75);
@@ -109,6 +109,8 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   zoomPercent->addItem(tr("300 %"), 300);
   zoomPercent->addItem(tr("400 %"), 400);
   zoomPercent->addItem(tr("500 %"), 500);
+  zoomPercent->setInsertPolicy(QComboBox::NoInsert);
+  zoomPercent->setInputMethodHints(Qt::ImhDigitsOnly);
   ui->toolBar->addWidget(zoomPercent);
 
   // Put the various actions into logical groups
@@ -180,7 +182,9 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   QObject::connect(ui->actionGoTo_Page, SIGNAL(triggered()), this,
                    SLOT(gotoPage()));
   QObject::connect(zoomPercent, qOverload<int>(&QComboBox::currentIndexChanged),
-                   [=](int index) { onZoomPageIndexChanged(zoomPercent->currentData().toInt()); });
+                   [=]() { onZoomPageIndexChanged(); });
+  QObject::connect(zoomPercent->lineEdit(), SIGNAL(returnPressed()), this,
+                  SLOT(onZoomPageTextChanged()));
   QObject::connect(ui->actionProperties, &QAction::triggered, WIDGET,
                    [&] { PROPDIALOG->show(); });
   QObject::connect(BACKEND, &Renderer::OrigSize, this,
@@ -819,20 +823,30 @@ void MainUI::gotoPage() {
         ShowPage(page);
 }
 
-void MainUI::onZoomPageIndexChanged(int index) {
-
-  if ( index == -1 ) {
-    return;
-  } else if ( index == 0 ) { // fit width
-    WIDGET->fitToWidth();
-  } else if ( index == 1 ) { // fit page
-    WIDGET->fitView();
-  } else {
-    WIDGET->fitView();
-    WIDGET->zoomIn(index / 100.0);
+void MainUI::onZoomPageIndexChanged() {
+  int percentage = zoomPercent->currentData().toInt();
+  switch (zoomPercent->currentData().toInt())
+  {
+    case -2:
+      WIDGET->fitToWidth();
+      break;
+    case -1:
+      WIDGET->fitView();
+      break;
+    default:
+      WIDGET->fitView();
+      WIDGET->zoomIn(percentage / 100.0);
+      break;
   }
 }
 
+void MainUI::onZoomPageTextChanged() {
+   int percentage =  zoomPercent->currentText().remove('%').toInt() ;
+   if (percentage > 0 ) {
+    WIDGET->fitView();
+    WIDGET->zoomIn(percentage / 100.0);
+   }
+}
 void MainUI::find(QString text, bool forward) {
   if (!text.isEmpty()) {
     static bool previousMatchCase = matchCase;

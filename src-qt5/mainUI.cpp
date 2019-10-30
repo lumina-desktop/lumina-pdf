@@ -98,8 +98,8 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
 
   zoomPercent = new QComboBox(this);
   zoomPercent->setEditable(true);
-  zoomPercent->addItem(tr("Fit width"), -2);
-  zoomPercent->addItem(tr("Fit page"), -1);
+  zoomPercent->addItem(tr("Fit page"), -2);
+  zoomPercent->addItem(tr("Fit width"), -1);
   zoomPercent->addItem(tr("25 %"), 25);
   zoomPercent->addItem(tr("50 %"), 50);
   zoomPercent->addItem(tr("75 %"), 75);
@@ -109,9 +109,9 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   zoomPercent->addItem(tr("300 %"), 300);
   zoomPercent->addItem(tr("400 %"), 400);
   zoomPercent->addItem(tr("500 %"), 500);
+  zoomPercent->setCurrentIndex(0);
   zoomPercent->setInsertPolicy(QComboBox::NoInsert);
   zoomPercent->setInputMethodHints(Qt::ImhDigitsOnly);
-  zoomPercent->setCurrentIndex(1);
   ui->toolBar->insertWidget(ui->actionZoom_In_2, zoomPercent);
 
   // Put the various actions into logical groups
@@ -865,10 +865,10 @@ void MainUI::onZoomPageIndexChanged() {
   switch (zoomPercent->currentData().toInt())
   {
     case -2:
-      WIDGET->fitToWidth();
+      WIDGET->fitView();
       break;
     case -1:
-      WIDGET->fitView();
+      WIDGET->fitToWidth();
       break;
     default:
       WIDGET->fitView();

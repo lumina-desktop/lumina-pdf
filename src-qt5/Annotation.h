@@ -1,4 +1,5 @@
 #include <QColor>
+#include <QImage>
 #include <QList>
 #include <QPointF>
 #include <QPolygonF>

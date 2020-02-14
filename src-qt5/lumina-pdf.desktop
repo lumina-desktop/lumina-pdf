@@ -7,4 +7,6 @@ StartupNotify=true
 Categories=Office;Graphics
 MimeType=application/pdf;
 Name=Lumina PDF Viewer
+Name[pt]=Visualizador de PDF para Lumina
 Comment=View PDF Files
+Comment[pt]=Visualização de ficheiros PDF

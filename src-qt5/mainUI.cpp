@@ -96,14 +96,26 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   pageAct = ui->toolBar->insertWidget(ui->actionNext_Page,label_page);
   pageAct->setVisible(false);
 
+  zoomPercent = new QComboBox(this);
+  zoomPercent->setEditable(true);
+  zoomPercent->addItem(tr("Fit page"), -2);
+  zoomPercent->addItem(tr("Fit width"), -1);
+  zoomPercent->addItem(tr("25 %"), 25);
+  zoomPercent->addItem(tr("50 %"), 50);
+  zoomPercent->addItem(tr("75 %"), 75);
+  zoomPercent->addItem(tr("100 %"), 100);
+  zoomPercent->addItem(tr("150 %"), 150);
+  zoomPercent->addItem(tr("200 %"), 200);
+  zoomPercent->addItem(tr("300 %"), 300);
+  zoomPercent->addItem(tr("400 %"), 400);
+  zoomPercent->addItem(tr("500 %"), 500);
+  zoomPercent->setCurrentIndex(0);
+  zoomPercent->setInsertPolicy(QComboBox::NoInsert);
+  zoomPercent->setInputMethodHints(Qt::ImhDigitsOnly);
+  ui->toolBar->insertWidget(ui->actionZoom_In_2, zoomPercent);
+
   // Put the various actions into logical groups
   QActionGroup *tmp = new QActionGroup(this);
-  tmp->setExclusive(true);
-  tmp->addAction(ui->actionFit_Width);
-  tmp->addAction(ui->actionFit_Page);
-  ui->actionFit_Page->setChecked(true);
-
-  tmp = new QActionGroup(this);
   tmp->setExclusive(true);
   tmp->addAction(ui->actionSingle_Page);
   tmp->addAction(ui->actionDual_Pages);
@@ -118,10 +130,6 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   QObject::connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(close()));
   QObject::connect(ui->actionPrint, SIGNAL(triggered()), PrintDLG,
                    SLOT(open()));
-  QObject::connect(ui->actionFit_Width, SIGNAL(triggered()), WIDGET,
-                   SLOT(fitToWidth()));
-  QObject::connect(ui->actionFit_Page, SIGNAL(triggered()), WIDGET,
-                   SLOT(fitView()));
   QObject::connect(ui->actionOpen_PDF, SIGNAL(triggered()), this,
                    SLOT(OpenNewFile()));
   QObject::connect(ui->actionSingle_Page, SIGNAL(triggered()), WIDGET,
@@ -150,10 +158,10 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
     }
     BACKEND->setDegrees(90);
   });
-  QObject::connect(ui->actionZoom_In_2, &QAction::triggered, WIDGET,
-                   [&] { WIDGET->zoomIn(1.2); });
-  QObject::connect(ui->actionZoom_Out_2, &QAction::triggered, WIDGET,
-                   [&] { WIDGET->zoomOut(1.2); });
+  QObject::connect(ui->actionZoom_In_2, SIGNAL(triggered()), this,
+                   SLOT(zoomIn()));
+  QObject::connect(ui->actionZoom_Out_2, SIGNAL(triggered()), this,
+                   SLOT(zoomOut()));
   QObject::connect(ui->actionFirst_Page, SIGNAL(triggered()), this,
                    SLOT(firstPage()));
   QObject::connect(ui->actionPrevious_Page, SIGNAL(triggered()), this,
@@ -164,6 +172,10 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
                    SLOT(lastPage()));
   QObject::connect(ui->actionGoTo_Page, SIGNAL(triggered()), this,
                    SLOT(gotoPage()));
+  QObject::connect(zoomPercent, qOverload<int>(&QComboBox::currentIndexChanged),
+                   [=]() { onZoomPageIndexChanged(); });
+  QObject::connect(zoomPercent->lineEdit(), SIGNAL(returnPressed()), this,
+                  SLOT(onZoomPageTextChanged()));
   QObject::connect(ui->actionProperties, &QAction::triggered, WIDGET,
                    [&] { PROPDIALOG->show(); });
   QObject::connect(BACKEND, &Renderer::OrigSize, this,
@@ -222,8 +234,6 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   // Setup all the icons
   ui->actionPrint->setIcon(QIcon::fromTheme("document-print"));
   ui->actionClose->setIcon(QIcon::fromTheme("window-close"));
-  ui->actionFit_Width->setIcon(QIcon::fromTheme("transform-scale"));
-  ui->actionFit_Page->setIcon(QIcon::fromTheme("zoom-fit-best"));
   ui->actionOpen_PDF->setIcon(QIcon::fromTheme("document-open"));
   ui->actionSingle_Page->setIcon( QIcon::fromTheme("view-split-top-bottom", QIcon::fromTheme("format-view-agenda") ));
   ui->actionDual_Pages->setIcon( QIcon::fromTheme("view-split-left-right", QIcon::fromTheme("format-view-grid-small") ));
@@ -800,6 +810,79 @@ void MainUI::gotoPage() {
                                          tr("Page number:"), 1, 1, BACKEND->numPages(), 1, &ok);
     if (ok)
         ShowPage(page);
+}
+
+void MainUI::zoomIn() {
+  if (zoomPercent->findText( zoomPercent->currentText() ) == -1 ) {
+      double percentage = zoomPercent->currentText().remove('%').toDouble() * 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+  }
+  else {
+    switch( zoomPercent->currentData().toInt() ) {
+    case -2:
+    case -1:
+      WIDGET->zoomIn( 1.2 );
+      zoomPercent->lineEdit()->setText(QString("120 %"));
+      break;
+    default:
+      double percentage = zoomPercent->currentData().toInt() * 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+      break;
+    }
+  }
+}
+
+void MainUI::zoomOut() {
+  if (zoomPercent->findText( zoomPercent->currentText() ) == -1 ) {
+      double percentage = zoomPercent->currentText().remove('%').toDouble() / 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+  }
+  else {
+    switch( zoomPercent->currentData().toInt() ) {
+    case -2:
+    case -1:
+      WIDGET->zoomIn( 1.2 );
+      zoomPercent->lineEdit()->setText(QString("120 %"));
+      break;
+    default:
+      double percentage = zoomPercent->currentData().toInt() / 1.2 / 100;
+      WIDGET->fitView();
+      WIDGET->zoomIn( percentage );
+      zoomPercent->lineEdit()->setText(QString::number(percentage * 100.0, 'f', 2) + QString(" %"));
+      break;
+    }
+  }
+}
+
+void MainUI::onZoomPageIndexChanged() {
+  int percentage = zoomPercent->currentData().toInt();
+  switch (zoomPercent->currentData().toInt())
+  {
+    case -2:
+      WIDGET->fitView();
+      break;
+    case -1:
+      WIDGET->fitToWidth();
+      break;
+    default:
+      WIDGET->fitView();
+      WIDGET->zoomIn(percentage / 100.0);
+      break;
+  }
+}
+
+void MainUI::onZoomPageTextChanged() {
+   int percentage =  zoomPercent->currentText().remove('%').toInt() ;
+   if (percentage > 0 ) {
+    WIDGET->fitView();
+    WIDGET->zoomIn(percentage / 100.0);
+   }
 }
 void MainUI::find(QString text, bool forward) {
   if (!text.isEmpty()) {

@@ -9,7 +9,7 @@
 #include "ui_PropDialog.h"
 
 PropDialog::PropDialog(Renderer *Backend)
-    : QDialog(), ui(new Ui::PropDialog()), BACKEND(Backend) {
+    : ui(new Ui::PropDialog()), BACKEND(Backend) {
   ui->setupUi(this);
   this->setWindowTitle(tr("PDF Information"));
   this->setWindowIcon(QIcon::fromTheme("dialog-information"));

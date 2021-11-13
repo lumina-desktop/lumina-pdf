@@ -33,7 +33,7 @@ private:
 public:
   Renderer();
   ~Renderer();
-  bool loadMultiThread();
+  static bool loadMultiThread();
 
   // Information functions (usually needs to be loaded first)
   virtual int numPages() { return pnum; }

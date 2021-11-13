@@ -20,12 +20,12 @@
 
 #include "PrintWidget.h"
 
-MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
+MainUI::MainUI() : ui(new Ui::MainUI()) {
   ui->setupUi(this);
   // this->setWindowTitle(tr("Lumina PDF Viewer"));
   this->setWindowIcon(QIcon::fromTheme("application-pdf"));
   this->setFocusPolicy(Qt::StrongFocus);
-  presentationLabel = 0;
+  presentationLabel = nullptr;
   CurrentPage = 1;
   lastdir = QDir::homePath();
   BACKEND = new Renderer();
@@ -83,7 +83,7 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   // SLOT(slotStartPresentation(QAction*)) );
 
   // Create the other interface widgets
-  QWidget *spacer = new QWidget(this);
+  auto *spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     ui->toolBar->insertWidget(ui->actionPrevious_Page, spacer);
   progress = new QProgressBar(this);
@@ -97,7 +97,7 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
   pageAct->setVisible(false);
 
   // Put the various actions into logical groups
-  QActionGroup *tmp = new QActionGroup(this);
+  auto *tmp = new QActionGroup(this);
   tmp->setExclusive(true);
   tmp->addAction(ui->actionFit_Width);
   tmp->addAction(ui->actionFit_Page);
@@ -139,13 +139,13 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
                    [&] { WIDGET->zoomOut(1.2); });
   QObject::connect(ui->actionRotate_Counterclockwise, &QAction::triggered, this,
                    [&] {
-                     if (results.size() != 0) {
+                     if (!results.empty()) {
                        foreach (TextData *x, results) { x->highlighted(false); }
                      }
                      BACKEND->setDegrees(-90);
                    });
   QObject::connect(ui->actionRotate_Clockwise, &QAction::triggered, this, [&] {
-    if (results.size() != 0) {
+    if (!results.empty()) {
       foreach (TextData *x, results) { x->highlighted(false); }
     }
     BACKEND->setDegrees(90);
@@ -282,16 +282,16 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI()) {
 }
 
 MainUI::~MainUI() {
-  if (BOOKMARKS != 0) {
+  if (BOOKMARKS != nullptr) {
     BOOKMARKS->deleteLater();
   }
-  if (PROPDIALOG != 0) {
+  if (PROPDIALOG != nullptr) {
     PROPDIALOG->deleteLater();
   }
   delete BACKEND;
 }
 
-void MainUI::loadFile(QString path) {
+void MainUI::loadFile(const QString& path) {
   if (!QFile::exists(path) || path.isEmpty()) {
     return;
   }
@@ -323,7 +323,7 @@ void MainUI::loadFile(QString path) {
   QTimer::singleShot(50, [&]() { startLoadingPages(0); });
 }
 
-QScreen *MainUI::getScreen(bool current, bool &cancelled) {
+auto MainUI::getScreen(bool current, bool &cancelled) -> QScreen * {
   // Note: the "cancelled" boolian is actually an output - not an input
   QList<QScreen *> screens = QApplication::screens();
   cancelled = false;
@@ -333,16 +333,15 @@ QScreen *MainUI::getScreen(bool current, bool &cancelled) {
   // Multiple screens available - figure it out
   if (current) {
     // Just return the screen the window is currently on
-    for (int i = 0; i < screens.length(); i++) {
-      if (screens[i]->geometry().contains(this->mapToGlobal(this->pos()))) {
-        return screens[i];
+    for (auto & screen : screens) {
+      if (screen->geometry().contains(this->mapToGlobal(this->pos()))) {
+        return screen;
       }
     }
     // If it gets this far, there was an error and it should just return the
     // primary screen
     return QApplication::primaryScreen();
-  } else {
-    // Ask the user to select a screen (for presentations, etc..)
+  }     // Ask the user to select a screen (for presentations, etc..)
     QStringList names;
     for (int i = 0; i < screens.length(); i++) {
       QString screensize = QString::number(screens[i]->size().width()) + "x" +
@@ -361,7 +360,7 @@ QScreen *MainUI::getScreen(bool current, bool &cancelled) {
       return screens[0];
     }                      // error - should never happen though
     return screens[index]; // return the selected screen
-  }
+ 
 }
 
 void MainUI::startPresentation(bool atStart) {
@@ -384,7 +383,7 @@ void MainUI::startPresentation(bool atStart) {
   // PDPI = QSize(SCALEFACTOR*screen->physicalDotsPerInchX(),
   // SCALEFACTOR*screen->physicalDotsPerInchY()); Now create the full-screen
   // window on the selected screen
-  if (presentationLabel == 0) {
+  if (presentationLabel == nullptr) {
     // Create the label and any special flags for it
     presentationLabel = new PresentationLabel();
     presentationLabel->setStyleSheet("background-color: black;");
@@ -471,9 +470,9 @@ void MainUI::endPresentation() {
   updatePageNumber();
 }
 
-bool MainUI::presentationActive(){
-  if(presentationLabel == 0 ) { return false; }
-  else { return presentationLabel->isVisible(); }
+auto MainUI::presentationActive() -> bool{
+  if(presentationLabel == nullptr ) { return false; }
+  return presentationLabel->isVisible();
 }
 
 void MainUI::startLoadingPages(int degrees) {
@@ -684,7 +683,7 @@ void MainUI::updateClock() {
 void MainUI::updatePageNumber() {
   // qDebug() << "UpdatePageNumber";
   QString text;
-  if (presentationLabel == 0 || !presentationLabel->isVisible()) {
+  if (presentationLabel == nullptr || !presentationLabel->isVisible()) {
     text = tr("Page %1 of %2");
   } else {
     text = "%1/%2";
@@ -712,7 +711,7 @@ void MainUI::updateContextMenu() {
   contextMenu->addAction(ui->actionFirst_Page);
   contextMenu->addAction(ui->actionLast_Page);
   contextMenu->addSeparator();
-  if (presentationLabel == 0 || !presentationLabel->isVisible()) {
+  if (presentationLabel == nullptr || !presentationLabel->isVisible()) {
     contextMenu->addAction(ui->actionStart_Begin);
     contextMenu->addAction(ui->actionStart_Here);
   } else {
@@ -723,12 +722,13 @@ void MainUI::updateContextMenu() {
 void MainUI::keyPressEvent(QKeyEvent *event) {
   //qDebug() << "Got Key Press Event!";
   // See if this is one of the special hotkeys and act appropriately
-  bool inPresentation = (presentationLabel != 0);
+  bool inPresentation = (presentationLabel != nullptr);
   switch (event->key()) {
   case Qt::Key_Escape:
   case Qt::Key_Backspace: {
-    if (inPresentation)
+    if (inPresentation) {
       endPresentation();
+}
   } break;
   case Qt::Key_Right:
   case Qt::Key_Space:
@@ -770,8 +770,7 @@ void MainUI::keyPressEvent(QKeyEvent *event) {
   default: { QMainWindow::keyPressEvent(event); } break;
   }
 
-  return;
-}
+  }
 
 void MainUI::wheelEvent(QWheelEvent *event) {
   // Scroll the window according to the mouse wheel
@@ -798,10 +797,11 @@ void MainUI::gotoPage() {
   bool ok;
   int page = QInputDialog::getInt(this, tr("Go to page"),
                                          tr("Page number:"), 1, 1, BACKEND->numPages(), 1, &ok);
-    if (ok)
+    if (ok) {
         ShowPage(page);
 }
-void MainUI::find(QString text, bool forward) {
+}
+void MainUI::find(const QString& text, bool forward) {
   if (!text.isEmpty()) {
     static bool previousMatchCase = matchCase;
     // qDebug() << "Finding Text";
@@ -835,13 +835,15 @@ void MainUI::find(QString text, bool forward) {
       // Jump to the location of the next or previous textbox and highlight
       if (forward) {
         currentHighlight++;
-        if (currentHighlight >= results.size())
+        if (currentHighlight >= results.size()) {
           currentHighlight %= results.size();
+}
       } else {
         currentHighlight--;
         // Ensure currentHighlight will be between 0 and results.size() - 1
-        if (currentHighlight < 0)
+        if (currentHighlight < 0) {
           currentHighlight = results.size() - 1;
+}
       }
 
       ui->resultsLabel->setText(QString::number(currentHighlight + 1) + " of " +

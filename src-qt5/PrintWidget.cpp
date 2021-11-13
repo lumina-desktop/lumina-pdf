@@ -4,16 +4,16 @@
 #include <QtConcurrent>
 
 PrintWidget::PrintWidget(Renderer *backend, QWidget *parent)
-    : QGraphicsView(parent), scene(0), curPage(1), viewMode(SinglePageView),
+    : QGraphicsView(parent), scene(nullptr), curPage(1), viewMode(SinglePageView),
       zoomMode(FitInView), zoomFactor(1), initialized(false), fitting(true),
       BACKEND(backend) {
 
   this->setMouseTracking(true);
   QList<QWidget *> children =
       this->findChildren<QWidget *>("", Qt::FindChildrenRecursively);
-  for (int i = 0; i < children.length(); i++) {
-    children[i]->setContextMenuPolicy(Qt::CustomContextMenu);
-    QObject::connect(children[i],
+  for (auto & i : children) {
+    i->setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(i,
                      SIGNAL(customContextMenuRequested(const QPoint &)), this,
                      SIGNAL(customContextMenuRequested(const QPoint &)));
   }
@@ -36,8 +36,8 @@ PrintWidget::PrintWidget(Renderer *backend, QWidget *parent)
 }
 
 PrintWidget::~PrintWidget() {
-  for (int i = 0; i < pages.size(); i++) {
-    scene->removeItem(pages.at(i));
+  for (auto page : pages) {
+    scene->removeItem(page);
   }
   qDeleteAll(pages);
   pages.clear();
@@ -107,8 +107,9 @@ void PrintWidget::updatePreview() {
 }
 
 void PrintWidget::setVisible(bool visible) {
-  if (visible and !initialized)
+  if (visible and !initialized) {
     updatePreview();
+}
   QGraphicsView::setVisible(visible);
 }
 
@@ -136,7 +137,7 @@ void PrintWidget::setCurrentPage(int pageNumber) {
     updatePreview();
     for(int i=(curPage-3); i<=BACKEND->numPages(); i++){
       if(i<0){ continue; }
-      else if( i < (curPage-2) ){ BACKEND->clearHash(i); }
+      if( i < (curPage-2) ){ BACKEND->clearHash(i); }
       else if( i > (curPage+2) ){ BACKEND->clearHash(i); }
       else{
          if (BACKEND->loadMultiThread()) {
@@ -163,25 +164,29 @@ void PrintWidget::highlightText(TextData *text) {
     if (degrees != 0) {
       QSize center = BACKEND->imageSize(text->page() - 1) / 2;
 
-      if (degrees == 90 or degrees == 270)
+      if (degrees == 90 or degrees == 270) {
         center.transpose();
+}
 
-      double cx = center.width(), cy = center.height();
+      double cx = center.width();
+      double cy = center.height();
       rect.adjust(-cx, -cy, -cx, -cy);
       QMatrix matrix;
       matrix.rotate(BACKEND->rotatedDegrees());
       rect = matrix.mapRect(rect);
-      if (BACKEND->rotatedDegrees() == 180)
+      if (BACKEND->rotatedDegrees() == 180) {
         rect.adjust(cx, cy, cx, cy);
-      else
+      } else {
         rect.adjust(cy, cx, cy, cx);
+}
     }
 
     // qDebug() << "Post Degrees:" << rect;
     // Moves the rectangle onto the right page
     double pageHeight = 0;
-    for (int i = 0; i < text->page() - 1; i++)
+    for (int i = 0; i < text->page() - 1; i++) {
       pageHeight += pages.at(i)->boundingRect().height();
+}
 
     // qDebug() << "PageHeight:" << pageHeight;
 
@@ -212,8 +217,9 @@ void PrintWidget::generatePreview() {
 
 void PrintWidget::layoutPages() {
   int numPages = pages.count();
-  if (numPages < 1)
+  if (numPages < 1) {
     return;
+}
 
   int numPagePlaces = numPages;
   int cols = 1; // singleMode and default
@@ -233,11 +239,13 @@ void PrintWidget::layoutPages() {
   for (int i = 0; i < rows && pageNum < numPages; i++) {
     double rowMax = 0;
     for (int j = 0; j < cols && pageNum < numPages; j++) {
-      double itemWidth = 0, itemHeight = 0;
+      double itemWidth = 0;
+      double itemHeight = 0;
       double pageHeight = pages.at(pageNum)->boundingRect().height();
 
-      for (int k = cols * (pageNum / cols); k < pageNum; k++)
+      for (int k = cols * (pageNum / cols); k < pageNum; k++) {
         itemWidth += pages.at(k)->boundingRect().width();
+}
 
       foreach (double size, rowMaxList)
         itemHeight += size;
@@ -281,13 +289,13 @@ void PrintWidget::populateScene() {
       continue;
     }
 
-    PageItem *item = new PageItem(i + 1, pagePicture, paperSize, BACKEND);
+    auto *item = new PageItem(i + 1, pagePicture, paperSize, BACKEND);
     scene->addItem(item);
     pages.append(item);
 
     if (BACKEND->supportsExtraFeatures()) {
       for (int k = 0; k < BACKEND->linkSize(i); k++) {
-        LinkItem *lItem = new LinkItem(item, BACKEND->linkList(i, k));
+        auto *lItem = new LinkItem(item, BACKEND->linkList(i, k));
         lItem->setOpacity(0.1);
         linkLocations.append(lItem);
       }
@@ -295,11 +303,11 @@ void PrintWidget::populateScene() {
       for (int k = 0; k < BACKEND->annotSize(i); k++) {
         Annotation *annot = BACKEND->annotList(i, k);
         if (annot->getType() == 14) {
-          InkItem *iItem = new InkItem(item, annot);
+          auto *iItem = new InkItem(item, annot);
           annotLocations.append(iItem);
         }
-        PopupItem *aItem = new PopupItem(item, annot);
-        AnnotZone *aZone = new AnnotZone(item, annot, aItem);
+        auto *aItem = new PopupItem(item, annot);
+        auto *aZone = new AnnotZone(item, annot, aItem);
         aItem->setVisible(false);
         annotLocations.append(aItem);
         annotLocations.append(aZone);
@@ -312,10 +320,10 @@ void PrintWidget::populateScene() {
         QString text = widget->getCurrentText();
         switch (type) {
         case 0: {
-          QPushButton *button = new QPushButton(widget->getCurrentText());
+          auto *button = new QPushButton(widget->getCurrentText());
           button->setGeometry(loc.toRect());
           button->setText(text);
-          QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(item);
+          auto *proxy = new QGraphicsProxyWidget(item);
           proxy->setWidget(button);
         } break;
         case 1: {
@@ -347,8 +355,9 @@ void PrintWidget::populateScene() {
 
 // Private Slots
 void PrintWidget::updateCurrentPage() {
-  if (viewMode == AllPagesView)
+  if (viewMode == AllPagesView) {
     return;
+}
 
   int newPage = calcCurrentPage();
   if (newPage != curPage) {
@@ -358,7 +367,7 @@ void PrintWidget::updateCurrentPage() {
   }
 }
 
-int PrintWidget::calcCurrentPage() {
+auto PrintWidget::calcCurrentPage() -> int {
   int maxArea = 0;
 
   return curPage;
@@ -366,8 +375,8 @@ int PrintWidget::calcCurrentPage() {
   int newPage = curPage;
   QRect viewRect = this->viewport()->rect();
   QList<QGraphicsItem *> items = this->items(viewRect);
-  for (int i = 0; i < items.size(); ++i) {
-    PageItem *pg = static_cast<PageItem *>(items.at(i));
+  for (auto item : items) {
+    auto *pg = static_cast<PageItem *>(item);
     QRect overlap =
         this->mapFromScene(pg->sceneBoundingRect()).boundingRect() & viewRect;
     int area = overlap.width() * overlap.height();
@@ -382,10 +391,12 @@ int PrintWidget::calcCurrentPage() {
 }
 
 void PrintWidget::fit(bool doFitting) {
-  if (curPage < 1 || curPage > pages.count())
+  if (curPage < 1 || curPage > pages.count()) {
     return;
-  if (!doFitting && !fitting)
+}
+  if (!doFitting && !fitting) {
     return;
+}
 
   if (doFitting && fitting) {
     QRect viewRect = this->viewport()->rect();
@@ -393,23 +404,26 @@ void PrintWidget::fit(bool doFitting) {
       QList<QGraphicsItem *> containedItems =
           this->items(viewRect, Qt::ContainsItemBoundingRect);
       foreach (QGraphicsItem *item, containedItems) {
-        PageItem *pg = static_cast<PageItem *>(item);
-        if (pg->pageNumber() == curPage)
+        auto *pg = static_cast<PageItem *>(item);
+        if (pg->pageNumber() == curPage) {
           return;
+}
       }
     }
 
     int newPage = calcCurrentPage();
-    if (newPage != curPage)
+    if (newPage != curPage) {
       curPage = newPage;
+}
   }
 
   QRectF target = pages.at(curPage - 1)->sceneBoundingRect();
   if (viewMode == FacingPagesView) {
-    if (curPage % 2)
+    if ((curPage % 2) != 0) {
       target.setLeft(target.left() - target.width());
-    else
+    } else {
       target.setRight(target.right() + target.width());
+}
   } else if (viewMode == AllPagesView) {
     target = scene->itemsBoundingRect();
   }
@@ -456,11 +470,13 @@ void PrintWidget::goToPosition(int pagenum, float x, float y) {
 
   // qDebug() << "newX:" << xConv << "newY:" << yConv;
 
-  if (yConv > vsc->maximum())
+  if (yConv > vsc->maximum()) {
     vsc->triggerAction(QAbstractSlider::SliderToMaximum);
-  else if (y != 0)
+  } else if (y != 0) {
     vsc->setValue(yConv);
+}
 
-  if (x != 0)
+  if (x != 0) {
     hsc->setValue(xConv);
+}
 }

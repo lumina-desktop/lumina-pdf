@@ -37,7 +37,7 @@ public:
   MainUI();
   ~MainUI();
 
-  void loadFile(QString path);
+  void loadFile(const QString& path);
 
 private:
   QSizeF pageSize;
@@ -88,7 +88,7 @@ private slots:
   void startPresentationBeginning() { startPresentation(true); }
   void closePresentation() { endPresentation(); }
 
-  void find(QString text, bool forward);
+  void find(const QString& text, bool forward);
 
   void paintToPrinter(QPrinter *PRINTER);
 

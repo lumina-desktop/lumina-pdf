@@ -25,7 +25,8 @@ BookmarkMenu::BookmarkMenu(Renderer *Backend, QWidget *parent)
 }
 
 void BookmarkMenu::loadBookmarks() {
-  QTreeWidgetItem *item = nullptr, *parent = nullptr;
+  QTreeWidgetItem *item = nullptr;
+  QTreeWidgetItem *parent = nullptr;
   QList<Bookmark *> bookmarks = BACKEND->getBookmarks();
 
   if (ui->bookmarks->topLevelItemCount() != 0) {
@@ -48,10 +49,11 @@ void BookmarkMenu::loadBookmarks() {
       }
       item->setText(0, bm->title);
       item->setData(1, Qt::UserRole, bm->link);
-      if (!bm->link.isEmpty())
+      if (!bm->link.isEmpty()) {
         item->setIcon(0, QIcon::fromTheme("bookmark-new"));
-      else
+      } else {
         item->setIcon(0, QIcon::fromTheme("bookmark-remove"));
+}
     }
   }
 }

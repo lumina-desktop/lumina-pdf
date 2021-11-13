@@ -32,13 +32,13 @@ Renderer::~Renderer() {
   loadingHash.clear();
 }
 
-bool Renderer::loadMultiThread() { return true; }
+auto Renderer::loadMultiThread() -> bool { return true; }
 
 /*QJsonObject Renderer::properties(){
   return QJsonObject(); //TO-DO
 }*/
 
-bool Renderer::loadDocument(QString path, QString password) {
+auto Renderer::loadDocument(QString path, QString password) -> bool {
   // qDebug() << "Load Document:" << path;
   if (DOC != nullptr && path != docpath) {
     // Clear out the old document first
@@ -79,7 +79,7 @@ bool Renderer::loadDocument(QString path, QString password) {
   pnum = DOC->numPages();
   // Setup the Document
   Poppler::Page *PAGE = DOC->page(0);
-  if (PAGE != 0) {
+  if (PAGE != nullptr) {
     /*switch(PAGE->orientation()){
       case Poppler::Page::Landscape:
         WIDGET->setOrientation(QPageLayout::Landscape); break;
@@ -172,16 +172,16 @@ void Renderer::renderPage(int pagenum, QSize DPI, int degrees) {
   //--pagesStillLoading;
 }
 
-bool Renderer::isDoneLoading(int page) { return loadingHash.contains(page); }
+auto Renderer::isDoneLoading(int page) -> bool { return loadingHash.contains(page); }
 
-QList<TextData *> Renderer::searchDocument(QString text, bool matchCase) {
+auto Renderer::searchDocument(QString text, bool matchCase) -> QList<TextData *> {
   QList<TextData *> results;
   for (int i = 0; i < pnum; i++) {
     QList<Poppler::TextBox *> textList = DOC->page(i)->textList();
-    for (int j = 0; j < textList.size(); j++) {
-      if (textList[j]->text().contains(
+    for (auto & j : textList) {
+      if (j->text().contains(
               text, (matchCase) ? Qt::CaseSensitive : Qt::CaseInsensitive)) {
-        TextData *t = new TextData(textList[j]->boundingBox(), i + 1, text);
+        auto *t = new TextData(j->boundingBox(), i + 1, text);
         results.append(t);
       }
     }
@@ -189,17 +189,16 @@ QList<TextData *> Renderer::searchDocument(QString text, bool matchCase) {
   return results;
 }
 
-QSize Renderer::imageSize(int pagenum) {
+auto Renderer::imageSize(int pagenum) -> QSize {
   if(!loadingHash.contains(pagenum)){ return QSize(); }
   return loadingHash[pagenum].size();
 }
 
-QImage Renderer::imageHash(int pagenum) {
+auto Renderer::imageHash(int pagenum) -> QImage {
   if(loadingHash.contains(pagenum)){
     return loadingHash[pagenum];
-  }else{
-    return QImage();
-  }
+  }    return QImage();
+ 
   //if(!imageCache.contains(pagenum)){ return QImage(); }
   // while(pagesStillLoading > 0) { qDebug() << "pagesStillLoading!\n";}
 
@@ -212,7 +211,7 @@ QImage Renderer::imageHash(int pagenum) {
   //return *imageCache.get(pagenum);
 }
 
-int Renderer::hashSize() {
+auto Renderer::hashSize() -> int {
   //qDebug() << "pages contains " << pages.size() << " elements.\n";
   return loadingHash.size();
 }
@@ -226,34 +225,33 @@ void Renderer::clearHash( int pagenum) {
 }
 
 // Highlighting found text, bookmarks, and page properties disabled for Poppler
-bool Renderer::supportsExtraFeatures() { return false; }
+auto Renderer::supportsExtraFeatures() -> bool { return false; }
 
-void Renderer::traverseOutline(void *, int) {}
+void Renderer::traverseOutline(void * /*unused*/, int /*unused*/) {}
 
 void Renderer::handleLink(QWidget *obj, QString linkDest) {
   Poppler::Link *trueLink;
-  for (std::vector<QList<LuminaPDF::Link *>>::iterator link_itr = links.begin();
-       link_itr != links.end(); ++link_itr) {
-    auto linkArray = *link_itr;
-
-    for (int i = 0; i < linkArray.size(); i++) {
-      Poppler::Link *link = linkArray[i]->getLink();
+  for (auto linkArray : links) {
+    for (auto & i : linkArray) {
+      Poppler::Link *link = i->getLink();
       if (link->linkType() == Poppler::Link::LinkType::Browse) {
-        if (linkDest == dynamic_cast<Poppler::LinkBrowse *>(link)->url())
+        if (linkDest == dynamic_cast<Poppler::LinkBrowse *>(link)->url()) {
           trueLink = link;
+}
       } else if (link->linkType() == Poppler::Link::LinkType::Goto) {
-        if (linkDest == dynamic_cast<Poppler::LinkGoto *>(link)->fileName())
+        if (linkDest == dynamic_cast<Poppler::LinkGoto *>(link)->fileName()) {
           trueLink = link;
+}
       }
     }
   }
-  if (trueLink) {
-    if (trueLink->linkType() == Poppler::Link::LinkType::Goto)
+  if (trueLink != nullptr) {
+    if (trueLink->linkType() == Poppler::Link::LinkType::Goto) {
       emit goToPosition(dynamic_cast<Poppler::LinkGoto *>(trueLink)
                             ->destination()
                             .pageNumber(),
                         0, 0);
-    else if (trueLink->linkType() == Poppler::Link::LinkType::Browse) {
+    } else if (trueLink->linkType() == Poppler::Link::LinkType::Browse) {
       if (QMessageBox::Yes ==
           QMessageBox::question(
               obj, tr("Open External Link?"),
@@ -266,25 +264,24 @@ void Renderer::handleLink(QWidget *obj, QString linkDest) {
   }
 }
 
-TextData *Renderer::linkList(int pageNum, int entry) {
-  if (links[pageNum].size() > 0)
+auto Renderer::linkList(int pageNum, int entry) -> TextData * {
+  if (!links[pageNum].empty()) {
     return links[pageNum][entry]->getData();
-  else
-    return 0;
+  }     return 0;
 }
 
-int Renderer::linkSize(int pageNum) {
+auto Renderer::linkSize(int pageNum) -> int {
   Q_UNUSED(pageNum) return links[pageNum].size();
 }
 
-int Renderer::annotSize(int pageNum) { Q_UNUSED(pageNum) return 0; }
+auto Renderer::annotSize(int pageNum) -> int { Q_UNUSED(pageNum) return 0; }
 
-Annotation *Renderer::annotList(int pageNum, int entry) {
+auto Renderer::annotList(int pageNum, int entry) -> Annotation * {
   Q_UNUSED(pageNum) Q_UNUSED(entry) return NULL;
 }
 
-int Renderer::widgetSize(int pageNum) { Q_UNUSED(pageNum) return 0; }
+auto Renderer::widgetSize(int pageNum) -> int { Q_UNUSED(pageNum) return 0; }
 
-Widget *Renderer::widgetList(int pageNum, int entry) {
+auto Renderer::widgetList(int pageNum, int entry) -> Widget * {
   Q_UNUSED(pageNum) Q_UNUSED(entry) return NULL;
 }

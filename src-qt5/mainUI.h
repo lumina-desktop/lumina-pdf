@@ -19,6 +19,7 @@
 #include <QProgressBar>
 #include <QTimer>
 #include <QWheelEvent>
+#include <QComboBox>
 
 #include "BookmarkMenu.h"
 #include "PresentationLabel.h"
@@ -57,6 +58,7 @@ private:
   QAction *progAct; // action associated with the progressbar
   QTimer *clockTimer;
   QMenu *contextMenu;
+  QComboBox *zoomPercent;
   // QFrame *frame_presenter;
   QLabel *label_clock, *label_page;
   QAction *clockAct, *pageAct;
@@ -82,6 +84,10 @@ private slots:
   void nextPage();
   void prevPage();
   void gotoPage();
+  void zoomIn();
+  void zoomOut();
+  void onZoomPageIndexChanged();
+  void onZoomPageTextChanged();
   void firstPage() { ShowPage(1); }
   void lastPage() { ShowPage(BACKEND->numPages()); }
   void startPresentationHere() { startPresentation(false); }
